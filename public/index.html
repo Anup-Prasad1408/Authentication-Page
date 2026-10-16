@@ -1,0 +1,965 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#07131f">
+  <title>Northstar | Authentication</title>
+
+  <style>
+    :root {
+      --bg: #07131f;
+      --panel: #0d1d2b;
+      --input: #091925;
+      --text: #edf7fa;
+      --muted: #91a7b4;
+      --teal: #39d7c2;
+      --border: #29404d;
+      --red: #ff8b94;
+      --green: #78e5b3;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 24px;
+      display: grid;
+      place-items: center;
+      color: var(--text);
+      background:
+        radial-gradient(ellipse at top left, #17605a55, transparent 45%),
+        radial-gradient(ellipse at bottom right, #20466b55, transparent 45%),
+        var(--bg);
+      font-family: Arial, sans-serif;
+    }
+
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+
+    .layout {
+      width: min(960px, 100%);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border: 1px solid #ffffff19;
+      border-radius: 24px;
+      overflow: hidden;
+      background: #0a1b29ed;
+      box-shadow: 0 25px 80px #0005;
+    }
+
+    .intro {
+      padding: 42px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background: linear-gradient(145deg, #12484b, #0a1b29 75%);
+    }
+
+    .brand {
+      color: var(--teal);
+      font-weight: 800;
+      letter-spacing: 3px;
+      font-size: 14px;
+    }
+
+    .intro h1 {
+      font-size: clamp(34px, 4vw, 49px);
+      line-height: 1.1;
+      margin: 35px 0 16px;
+    }
+
+    .intro h1 span { color: var(--teal); }
+
+    .intro p {
+      color: #a9bec8;
+      line-height: 1.8;
+      font-size: 14px;
+    }
+
+    .intro-note {
+      margin-top: 45px;
+      color: #9fb9c2;
+      font-size: 12px;
+    }
+
+    .content {
+      padding: 42px;
+      min-width: 0;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 6px;
+      padding: 5px;
+      margin-bottom: 30px;
+      background: #06131e;
+      border: 1px solid #ffffff12;
+      border-radius: 12px;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 12px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .tab.active {
+      background: #173a43;
+      color: var(--teal);
+    }
+
+    h2 { margin: 0 0 9px; font-size: 27px; }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+      margin: 0 0 25px;
+    }
+
+    .field { margin-bottom: 17px; }
+
+    .field label {
+      display: block;
+      margin-bottom: 8px;
+      color: #ccdae0;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .field input {
+      width: 100%;
+      padding: 14px;
+      color: var(--text);
+      background: var(--input);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    .field input:focus {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px #39d7c21c;
+    }
+
+    .email-control {
+      display: flex;
+      align-items: stretch;
+      gap: 8px;
+    }
+
+    .email-control input { min-width: 0; flex: 1; }
+
+    .verify-link {
+      flex-shrink: 0;
+      padding: 0 13px;
+      border: 1px solid #39d7c255;
+      border-radius: 10px;
+      background: #39d7c212;
+      color: var(--teal);
+      font-size: 12px;
+      font-weight: 800;
+      transition: .2s;
+    }
+
+    .verify-link:hover {
+      background: #39d7c225;
+      border-color: var(--teal);
+    }
+
+    .verify-link:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+
+    .primary {
+      width: 100%;
+      padding: 14px 16px;
+      border: 0;
+      border-radius: 10px;
+      color: #06252a;
+      background: linear-gradient(110deg, #50e7d0, #24b7a8);
+      font-weight: 800;
+      transition: transform .2s, filter .2s;
+    }
+
+    .primary:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
+    }
+
+    .primary:disabled {
+      opacity: .55;
+      cursor: wait;
+      transform: none;
+    }
+
+    .secondary {
+      width: 100%;
+      padding: 13px;
+      margin-top: 10px;
+      color: var(--text);
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+
+    .text-button {
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--teal);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .text-button:hover { text-decoration: underline; }
+
+    .bottom-note {
+      margin: 22px 0 0;
+      color: var(--muted);
+      text-align: center;
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .notice {
+      display: none;
+      padding: 12px;
+      margin: 0 0 18px;
+      border-radius: 9px;
+      font-size: 12px;
+      line-height: 1.6;
+      overflow-wrap: anywhere;
+    }
+
+    .notice.show { display: block; }
+    .notice.error { color: #ffc1c5; background: #ff7e8712; border: 1px solid #ff7e8735; }
+    .notice.success { color: #9af2ce; background: #74e0ae12; border: 1px solid #74e0ae35; }
+
+    .hidden { display: none !important; }
+
+    .profile {
+      padding: 22px;
+      border: 1px solid #ffffff18;
+      border-radius: 14px;
+      background: #071722;
+      margin: 20px 0;
+    }
+
+    .avatar {
+      width: 54px;
+      height: 54px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 16px;
+      border-radius: 17px;
+      color: #06252a;
+      background: var(--teal);
+      font-size: 23px;
+      font-weight: 800;
+    }
+
+    .profile p {
+      color: var(--muted);
+      font-size: 13px;
+      overflow-wrap: anywhere;
+    }
+
+    .verified-label {
+      color: var(--green);
+      font-size: 12px;
+      margin-top: 15px;
+    }
+
+    /* OTP POPUP */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: #020910c9;
+      backdrop-filter: blur(8px);
+    }
+
+    .modal {
+      width: min(440px, 100%);
+      padding: 28px;
+      position: relative;
+      border: 1px solid #39d7c244;
+      border-radius: 20px;
+      background: #0d1d2b;
+      box-shadow: 0 25px 100px #0009;
+      animation: modalIn .22s ease-out;
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: translateY(12px) scale(.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .modal-icon {
+      width: 52px;
+      height: 52px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 20px;
+      border-radius: 16px;
+      background: #39d7c219;
+      color: var(--teal);
+      font-size: 25px;
+    }
+
+    .modal h2 { font-size: 24px; }
+
+    .modal-subtitle {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+      overflow-wrap: anywhere;
+    }
+
+    .otp-inputs {
+      display: flex;
+      gap: 8px;
+      margin: 23px 0;
+    }
+
+    .otp-inputs input {
+      width: 0;
+      min-width: 0;
+      flex: 1;
+      padding: 13px 0;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--input);
+      color: var(--text);
+      text-align: center;
+      font-size: 23px;
+      font-weight: 800;
+      outline: none;
+    }
+
+    .otp-inputs input:focus {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px #39d7c21a;
+    }
+
+    .modal-status {
+      min-height: 20px;
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .modal-status.error { color: var(--red); }
+    .modal-status.success { color: var(--green); }
+
+    .modal-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 17px;
+    }
+
+    .resend-button {
+      border: 0;
+      background: transparent;
+      color: var(--teal);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .resend-button:disabled {
+      color: var(--muted);
+      cursor: not-allowed;
+    }
+
+    .modal-close {
+      position: absolute;
+      right: 16px;
+      top: 14px;
+      width: 34px;
+      height: 34px;
+      border: 0;
+      border-radius: 9px;
+      color: #c4d5dc;
+      background: #ffffff0b;
+      font-size: 23px;
+    }
+
+    .modal-close:hover { background: #ffffff18; }
+
+    @media (max-width: 760px) {
+      body { padding: 12px; }
+      .layout { grid-template-columns: 1fr; }
+      .intro { display: none; }
+      .content { padding: 28px 20px; }
+      .modal { padding: 24px 19px; }
+      .otp-inputs { gap: 5px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="layout">
+    <aside class="intro">
+      <div class="brand">✦ NORTHSTAR</div>
+      <h1>Make room for <span>what's next.</span></h1>
+      <p>
+        Your personal learning space. Create your account securely
+        and continue your journey.
+      </p>
+      <div class="intro-note">● Email verification · Secure password storage</div>
+    </aside>
+
+    <section class="content">
+      <div class="tabs" id="tabs">
+        <button class="tab active" id="login-tab" type="button">Sign in</button>
+        <button class="tab" id="register-tab" type="button">Create account</button>
+      </div>
+
+      <div id="page-notice" class="notice" role="status" aria-live="polite"></div>
+
+      <!-- LOGIN -->
+      <section id="login-view">
+        <h2>Welcome back</h2>
+        <p class="subtitle">Sign in to access your account.</p>
+
+        <form id="login-form">
+          <div class="field">
+            <label for="login-email">Email address</label>
+            <input id="login-email" type="email" required
+              autocomplete="email" maxlength="254"
+              placeholder="you@example.com">
+          </div>
+
+          <div class="field">
+            <label for="login-password">Password</label>
+            <input id="login-password" type="password" required
+              autocomplete="current-password"
+              placeholder="Enter your password">
+          </div>
+
+          <button class="primary" type="submit">Sign in securely →</button>
+        </form>
+
+        <p class="bottom-note">
+          Don't have an account?
+          <button class="text-button" id="go-register" type="button">
+            Create one
+          </button>
+        </p>
+      </section>
+
+      <!-- REGISTER -->
+      <section id="register-view" class="hidden">
+        <h2>Create your account</h2>
+        <p class="subtitle">
+          Fill in your details. Click Verify next to your email address
+          to open the OTP popup.
+        </p>
+
+        <form id="register-form">
+          <div class="field">
+            <label for="reg-name">Full name</label>
+            <input id="reg-name" required minlength="2" maxlength="80"
+              autocomplete="name" placeholder="Your full name">
+          </div>
+
+          <div class="field">
+            <label for="reg-mobile">
+              Mobile number <span style="color:#91a7b4">(Optional)</span>
+            </label>
+            <input id="reg-mobile" type="tel" maxlength="25"
+              autocomplete="tel" placeholder="+91 98XXXXXXXX">
+          </div>
+
+          <div class="field">
+            <label for="reg-email">Email address</label>
+            <div class="email-control">
+              <input id="reg-email" type="email" required
+                maxlength="254" autocomplete="email"
+                placeholder="you@example.com">
+              <button id="verify-email-button" class="verify-link"
+                type="button">Verify ↗</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="reg-password">Password</label>
+            <input id="reg-password" type="password" required
+              minlength="10" maxlength="72"
+              autocomplete="new-password"
+              placeholder="At least 10 characters">
+          </div>
+
+          <button class="primary" type="submit">
+            Verify email to continue →
+          </button>
+        </form>
+
+        <p class="bottom-note">
+          Already have an account?
+          <button class="text-button" id="go-login" type="button">
+            Sign in
+          </button>
+        </p>
+      </section>
+
+      <!-- PROFILE AFTER SUCCESSFUL ACCOUNT CREATION -->
+      <section id="profile-view" class="hidden">
+        <h2>Account created!</h2>
+        <p class="subtitle">Your email is verified and your account is ready.</p>
+
+        <div class="profile">
+          <div id="profile-avatar" class="avatar">A</div>
+          <h3 id="profile-name">User</h3>
+          <p id="profile-email"></p>
+          <div class="verified-label">✓ Email verified</div>
+        </div>
+
+        <button id="logout-button" class="primary" type="button">
+          Sign out
+        </button>
+      </section>
+    </section>
+  </main>
+
+  <!-- OTP MODAL POPUP -->
+  <div id="otp-modal" class="modal-backdrop hidden"
+    role="dialog" aria-modal="true" aria-labelledby="otp-title">
+
+    <div class="modal">
+      <button id="close-modal" class="modal-close"
+        type="button" aria-label="Close popup">×</button>
+
+      <div class="modal-icon">✉</div>
+      <h2 id="otp-title">Verify your email</h2>
+
+      <p class="modal-subtitle">
+        We've sent a six-digit OTP to
+        <strong id="otp-email-label"></strong>.
+        Enter the code below.
+      </p>
+
+      <form id="otp-form">
+        <div class="otp-inputs" aria-label="Six-digit OTP">
+          <input inputmode="numeric" autocomplete="one-time-code"
+            maxlength="1" aria-label="OTP digit 1" required>
+          <input inputmode="numeric" maxlength="1"
+            aria-label="OTP digit 2" required>
+          <input inputmode="numeric" maxlength="1"
+            aria-label="OTP digit 3" required>
+          <input inputmode="numeric" maxlength="1"
+            aria-label="OTP digit 4" required>
+          <input inputmode="numeric" maxlength="1"
+            aria-label="OTP digit 5" required>
+          <input inputmode="numeric" maxlength="1"
+            aria-label="OTP digit 6" required>
+        </div>
+
+        <p id="otp-status" class="modal-status" aria-live="polite"></p>
+
+        <button id="verify-otp-button" class="primary" type="submit">
+          Verify OTP
+        </button>
+      </form>
+
+      <button id="continue-button" class="primary hidden"
+        type="button" style="margin-top:10px">
+        Continue & Create Account →
+      </button>
+
+      <div class="modal-actions">
+        <button id="resend-button" class="resend-button"
+          type="button">Resend OTP</button>
+        <button id="cancel-button" class="resend-button"
+          type="button">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const $ = (selector) => document.querySelector(selector);
+    const $$ = (selector) => [...document.querySelectorAll(selector)];
+
+    let pendingEmail = "";
+    let emailIsVerified = false;
+    let resendTimer = null;
+
+    function showNotice(text, type = "error") {
+      const box = $("#page-notice");
+      box.textContent = text;
+      box.className = `notice show ${type}`;
+    }
+
+    function clearNotice() {
+      $("#page-notice").textContent = "";
+      $("#page-notice").className = "notice";
+    }
+
+    function setModalStatus(text, type = "") {
+      const el = $("#otp-status");
+      el.textContent = text;
+      el.className = `modal-status ${type}`;
+    }
+
+    async function api(url, body, method = "POST") {
+      const response = await fetch(url, {
+        method,
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        ...(body === undefined ? {} : { body: JSON.stringify(body) })
+      });
+
+      let data;
+
+      try {
+        data = await response.json();
+      } catch {
+        data = { success: false, message: "Unexpected server response." };
+      }
+
+      if (!response.ok || data.success === false) {
+        const error = new Error(data.message || "Request failed.");
+        error.status = response.status;
+        throw error;
+      }
+
+      return data;
+    }
+
+    function setBusy(button, busy, busyText) {
+      if (busy) {
+        button.dataset.oldText = button.textContent;
+        button.textContent = busyText;
+        button.disabled = true;
+      } else {
+        button.textContent = button.dataset.oldText || button.textContent;
+        button.disabled = false;
+      }
+    }
+
+    function showPage(page) {
+      clearNotice();
+
+      $("#login-view").classList.toggle("hidden", page !== "login");
+      $("#register-view").classList.toggle("hidden", page !== "register");
+      $("#profile-view").classList.toggle("hidden", page !== "profile");
+
+      $("#tabs").classList.toggle("hidden", page === "profile");
+
+      $("#login-tab").classList.toggle("active", page === "login");
+      $("#register-tab").classList.toggle("active", page === "register");
+    }
+
+    function openOTPModal(email) {
+      pendingEmail = email;
+      emailIsVerified = false;
+
+      $("#otp-email-label").textContent = email;
+      $("#otp-modal").classList.remove("hidden");
+
+      $("#otp-form").classList.remove("hidden");
+      $("#verify-otp-button").classList.remove("hidden");
+      $("#continue-button").classList.add("hidden");
+
+      $("#verify-otp-button").disabled = false;
+      $("#resend-button").disabled = false;
+
+      $$(".otp-inputs input").forEach(input => input.value = "");
+      setModalStatus("OTP expires in 10 minutes.");
+
+      setTimeout(() => $$(".otp-inputs input")[0].focus(), 50);
+    }
+
+    function closeOTPModal() {
+      $("#otp-modal").classList.add("hidden");
+      clearInterval(resendTimer);
+    }
+
+    $("#login-tab").addEventListener("click", () => showPage("login"));
+    $("#register-tab").addEventListener("click", () => showPage("register"));
+    $("#go-register").addEventListener("click", () => showPage("register"));
+    $("#go-login").addEventListener("click", () => showPage("login"));
+
+    $("#close-modal").addEventListener("click", closeOTPModal);
+    $("#cancel-button").addEventListener("click", closeOTPModal);
+
+    // Send the registration details to the backend and open the OTP popup.
+    async function requestOTP() {
+      clearNotice();
+
+      const name = $("#reg-name").value.trim();
+      const mobile = $("#reg-mobile").value.trim();
+      const email = $("#reg-email").value.trim().toLowerCase();
+      const password = $("#reg-password").value;
+
+      if (!$("#reg-name").reportValidity()) return;
+      if (!$("#reg-email").reportValidity()) return;
+      if (!$("#reg-password").reportValidity()) return;
+
+      const verifyButton = $("#verify-email-button");
+      setBusy(verifyButton, true, "Sending…");
+
+      try {
+        const result = await api("/api/auth/register", {
+          name,
+          email,
+          mobile,
+          password
+        });
+
+        pendingEmail = result.email;
+        openOTPModal(pendingEmail);
+        setModalStatus(result.message, "success");
+        startResendCooldown(60);
+      } catch (error) {
+        showNotice(error.message);
+      } finally {
+        setBusy(verifyButton, false);
+      }
+    }
+
+    $("#verify-email-button").addEventListener("click", requestOTP);
+
+    // The form's main button does the same thing as the Verify text.
+    $("#register-form").addEventListener("submit", async event => {
+      event.preventDefault();
+      await requestOTP();
+    });
+
+    // OTP input behaviour: one digit per box, auto-focus and paste support.
+    const otpInputs = $$(".otp-inputs input");
+
+    otpInputs.forEach((input, index) => {
+      input.addEventListener("input", () => {
+        input.value = input.value.replace(/\D/g, "").slice(-1);
+
+        if (input.value && index < otpInputs.length - 1) {
+          otpInputs[index + 1].focus();
+        }
+      });
+
+      input.addEventListener("keydown", event => {
+        if (event.key === "Backspace" && !input.value && index > 0) {
+          otpInputs[index - 1].focus();
+        }
+
+        if (event.key === "Enter" && index === otpInputs.length - 1) {
+          $("#otp-form").requestSubmit();
+        }
+      });
+
+      input.addEventListener("paste", event => {
+        const text = (event.clipboardData || window.clipboardData)
+          .getData("text")
+          .replace(/\D/g, "")
+          .slice(0, 6);
+
+        if (!text) return;
+
+        event.preventDefault();
+
+        text.split("").forEach((digit, i) => {
+          if (otpInputs[i]) otpInputs[i].value = digit;
+        });
+
+        otpInputs[Math.min(text.length, 5)].focus();
+      });
+    });
+
+    // Verify the OTP with the backend.
+    $("#otp-form").addEventListener("submit", async event => {
+      event.preventDefault();
+
+      if (!pendingEmail) {
+        setModalStatus("Start registration again.", "error");
+        return;
+      }
+
+      const code = otpInputs.map(input => input.value).join("");
+
+      if (!/^\d{6}$/.test(code)) {
+        setModalStatus("Enter all six digits.", "error");
+        return;
+      }
+
+      const button = $("#verify-otp-button");
+      setBusy(button, true, "Verifying…");
+
+      try {
+        const result = await api("/api/auth/verify-otp", {
+          email: pendingEmail,
+          code
+        });
+
+        emailIsVerified = true;
+
+        $("#otp-form").classList.add("hidden");
+        $("#verify-otp-button").classList.add("hidden");
+        $("#continue-button").classList.remove("hidden");
+
+        $("#resend-button").classList.add("hidden");
+        setModalStatus(result.message, "success");
+      } catch (error) {
+        setModalStatus(error.message, "error");
+      } finally {
+        setBusy(button, false);
+      }
+    });
+
+    // Resend OTP, subject to the backend cooldown.
+    function startResendCooldown(seconds) {
+      clearInterval(resendTimer);
+
+      const button = $("#resend-button");
+      let remaining = seconds;
+      button.disabled = true;
+      button.textContent = `Resend OTP (${remaining}s)`;
+
+      resendTimer = setInterval(() => {
+        remaining -= 1;
+
+        if (remaining <= 0) {
+          clearInterval(resendTimer);
+          button.disabled = false;
+          button.textContent = "Resend OTP";
+        } else {
+          button.textContent = `Resend OTP (${remaining}s)`;
+        }
+      }, 1000);
+    }
+
+    $("#resend-button").addEventListener("click", async () => {
+      if (!pendingEmail || emailIsVerified) return;
+
+      const button = $("#resend-button");
+      button.disabled = true;
+      setModalStatus("Sending a new code…");
+
+      try {
+        const result = await api("/api/auth/resend-otp", {
+          email: pendingEmail
+        });
+
+        setModalStatus(result.message, "success");
+        startResendCooldown(60);
+        otpInputs.forEach(input => input.value = "");
+        otpInputs[0].focus();
+      } catch (error) {
+        setModalStatus(error.message, "error");
+        button.disabled = false;
+        button.textContent = "Resend OTP";
+      }
+    });
+
+    // The account is created only after the user clicks Continue.
+    $("#continue-button").addEventListener("click", async () => {
+      if (!emailIsVerified || !pendingEmail) {
+        setModalStatus("Verify your email first.", "error");
+        return;
+      }
+
+      const button = $("#continue-button");
+      setBusy(button, true, "Creating account…");
+
+      try {
+        const result = await api("/api/auth/complete-registration", {
+          email: pendingEmail
+        });
+
+        closeOTPModal();
+        renderProfile(result.user);
+        showNotice(result.message, "success");
+
+        $("#register-form").reset();
+        pendingEmail = "";
+        emailIsVerified = false;
+      } catch (error) {
+        setModalStatus(error.message, "error");
+      } finally {
+        setBusy(button, false);
+      }
+    });
+
+    // Login.
+    $("#login-form").addEventListener("submit", async event => {
+      event.preventDefault();
+      clearNotice();
+
+      const button = event.currentTarget.querySelector(
+        'button[type="submit"]'
+      );
+
+      setBusy(button, true, "Signing in…");
+
+      try {
+        const result = await api("/api/auth/login", {
+          email: $("#login-email").value.trim().toLowerCase(),
+          password: $("#login-password").value
+        });
+
+        renderProfile(result.user);
+        showNotice(result.message, "success");
+      } catch (error) {
+        showNotice(error.message);
+      } finally {
+        setBusy(button, false);
+      }
+    });
+
+    function renderProfile(user) {
+      $("#profile-name").textContent = user.name || "User";
+      $("#profile-email").textContent = user.email || "";
+      $("#profile-avatar").textContent =
+        (user.name || "U").trim().charAt(0).toUpperCase();
+
+      showPage("profile");
+    }
+
+    // Logout.
+    $("#logout-button").addEventListener("click", async () => {
+      try {
+        const result = await api("/api/auth/logout", {});
+        showPage("login");
+        showNotice(result.message, "success");
+      } catch (error) {
+        showNotice(error.message);
+      }
+    });
+
+    // Restore a valid session after page refresh.
+    async function initialize() {
+      try {
+        const result = await api("/api/auth/me", undefined, "GET");
+        renderProfile(result.user);
+      } catch {
+        showPage("login");
+      }
+    }
+
+    initialize();
+  </script>
+</body>
+</html>
