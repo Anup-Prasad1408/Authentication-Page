@@ -1,0 +1,39 @@
+
+services:
+  - type: web
+    name: authentication-page
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+      - key: DEV_SHOW_OTP
+        value: "false"
+
+      - key: JWT_SECRET
+        generateValue: true
+
+      - key: MONGODB_URI
+        sync: false
+
+      - key: SMTP_HOST
+        sync: false
+
+      - key: SMTP_PORT
+        value: "587"
+
+      - key: SMTP_SECURE
+        value: "false"
+
+      - key: SMTP_USER
+        sync: false
+
+      - key: SMTP_PASS
+        sync: false
+
+      - key: MAIL_FROM
+        sync: false
